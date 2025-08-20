@@ -12,27 +12,17 @@ namespace ProvaPub.Services
             _ctx = ctx;
         }
 
-        public async Task<Order> PayOrder(string paymentMethod, decimal paymentValue, int customerId)
+        public async Task<Order> PayOrder(IPaymentMethod paymentMethod, decimal paymentValue, int customerId)
 		{
-			if (paymentMethod == "pix")
+			var order = new Order
 			{
-				//Faz pagamento...
-			}
-			else if (paymentMethod == "creditcard")
-			{
-				//Faz pagamento...
-			}
-			else if (paymentMethod == "paypal")
-			{
-				//Faz pagamento...
-			}
+				Value = paymentValue,
+				CustomerId = customerId,
+				OrderDate = DateTime.UtcNow // salva em UTC
+			};
+			paymentMethod.Pay(paymentValue);
 
-			return await InsertOrder(new Order() //Retorna o pedido para o controller
-            {
-                Value = paymentValue
-            });
-
-
+			return await InsertOrder(order); //Retorna o pedido para o controller
 		}
 
 		public async Task<Order> InsertOrder(Order order)
