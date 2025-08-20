@@ -18,11 +18,21 @@ namespace ProvaPub.Services
             _ctx = new TestDbContext(contextOptions);
         }
         public async Task<int> GetRandom()
-		{
-            var number =  new Random(seed).Next(100);
-            _ctx.Numbers.Add(new RandomNumber() { Number = number });
-            _ctx.SaveChanges();
-			return number;
+        {
+	        int number;
+	        bool exists;
+
+	        do
+	        {
+		        number = Random.Shared.Next(100);
+		        exists = await _ctx.Numbers.AnyAsync(x => x.Number == number);
+	        }
+	        while (exists);
+
+	        _ctx.Numbers.Add(new RandomNumber { Number = number });
+	        await _ctx.SaveChangesAsync();
+
+	        return number;
 		}
 
 	}
