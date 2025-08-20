@@ -7,15 +7,18 @@ namespace ProvaPub.Services
     public class CustomerService
     {
         TestDbContext _ctx;
+        PaginatorService _paginator;
 
-        public CustomerService(TestDbContext ctx)
+        public CustomerService(TestDbContext ctx, PaginatorService paginator)
         {
             _ctx = ctx;
+            _paginator = paginator;
         }
 
-        public CustomerList ListCustomers(int page)
+        public Task<PaginatedResult<Customer>> ListCustomers(int page)
         {
-            return new CustomerList() { HasNext = false, TotalCount = 10, Customers = _ctx.Customers.ToList() };
+            var query = _ctx.Customers.OrderBy(p => p.Id).AsQueryable();
+            return _paginator.PaginateAsync(query, page, 10);
         }
 
         public async Task<bool> CanPurchase(int customerId, decimal purchaseValue)
