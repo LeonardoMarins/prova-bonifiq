@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using ProvaPub.Provider;
 using ProvaPub.Repository;
 using ProvaPub.Services;
 
@@ -13,6 +14,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<RandomService>();
 builder.Services.AddScoped<PaginatorService>();
+builder.Services.AddScoped<IDateTimeProvider, SystemDateTimeProvider>();
 builder.Services.AddScoped<CustomerService>();
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddDbContext<TestDbContext>(options =>

@@ -21,11 +21,15 @@ namespace ProvaPub.Services
         {
 	        int number;
 	        bool exists;
+	        int totalNumbers;
 
 	        do
 	        {
 		        number = Random.Shared.Next(100);
 		        exists = await _ctx.Numbers.AnyAsync(x => x.Number == number);
+		        totalNumbers = await _ctx.Numbers.CountAsync();
+		        if (totalNumbers >= 100)
+			        return number;
 	        }
 	        while (exists);
 

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ProvaPub.Models;
+using ProvaPub.Provider;
 using ProvaPub.Repository;
 
 namespace ProvaPub.Services
@@ -8,11 +9,13 @@ namespace ProvaPub.Services
     {
         TestDbContext _ctx;
         PaginatorService _paginator;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
-        public CustomerService(TestDbContext ctx, PaginatorService paginator)
+        public CustomerService(TestDbContext ctx, PaginatorService paginator, IDateTimeProvider dateTimeProvider)
         {
             _ctx = ctx;
             _paginator = paginator;
+            _dateTimeProvider = dateTimeProvider;
         }
 
         public Task<PaginatedResult<Customer>> ListCustomers(int page)
@@ -32,7 +35,7 @@ namespace ProvaPub.Services
             if (customer == null) throw new InvalidOperationException($"Customer Id {customerId} does not exists");
 
             //Business Rule: A customer can purchase only a single time per month
-            var baseDate = DateTime.UtcNow.AddMonths(-1);
+            var baseDate = _dateTimeProvider.UtcNow.AddMonths(-1);
             var ordersInThisMonth = await _ctx.Orders.CountAsync(s => s.CustomerId == customerId && s.OrderDate >= baseDate);
             if (ordersInThisMonth > 0)
                 return false;
@@ -43,7 +46,8 @@ namespace ProvaPub.Services
                 return false;
 
             //Business Rule: A customer can purchases only during business hours and working days
-            if (DateTime.UtcNow.Hour < 8 || DateTime.UtcNow.Hour > 18 || DateTime.UtcNow.DayOfWeek == DayOfWeek.Saturday || DateTime.UtcNow.DayOfWeek == DayOfWeek.Sunday)
+            var now = _dateTimeProvider.UtcNow;
+            if (now.Hour < 8 || now.Hour > 18 || now.DayOfWeek == DayOfWeek.Saturday || now.DayOfWeek == DayOfWeek.Sunday)
                 return false;
 
 
